@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수준별 맞춤형 수학 퀴즈 · 공통수학1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Noto+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbf8f1; --ink:#1d2a44; --muted:#6b7590; --line:#e6dfcf;
+  --l1:#2f9e6b; --l2:#2f6fde; --l3:#d9473a; --gold:#e8a317;
+  --ok:#2f9e6b; --bad:#d9473a; --card:#ffffff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Gowun Dodum",system-ui,sans-serif; color:var(--ink); min-height:100vh;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:26px 26px;
+}
+.wrap{max-width:760px;margin:0 auto;padding:28px 18px 60px}
+h1,h2,h3,.disp{font-family:"Black Han Sans",sans-serif;font-weight:400;letter-spacing:.5px}
+i{font-family:"Noto Serif",serif;font-style:italic}
+.card{background:var(--card);border:2px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);padding:24px}
+.hidden{display:none!important}
+button{font-family:inherit;cursor:pointer}
+.btn{border:2px solid var(--ink);background:var(--ink);color:#fff;border-radius:12px;padding:12px 20px;font-size:17px;box-shadow:3px 3px 0 rgba(29,42,68,.35);transition:transform .08s}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(29,42,68,.35)}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* start */
+.hero{text-align:center;margin-bottom:22px}
+.hero .tag{display:inline-block;background:var(--gold);color:var(--ink);border:2px solid var(--ink);border-radius:99px;padding:3px 14px;font-size:14px;margin-bottom:10px}
+.hero h1{font-size:40px;margin:6px 0 6px;line-height:1.15}
+.hero h1 span{color:var(--l2)}
+.hero p{color:var(--muted);margin:0}
+.field{margin:18px 0}
+.field>label{display:block;font-weight:bold;margin-bottom:8px;font-size:15px}
+input[type=text]{width:100%;font-family:inherit;font-size:17px;padding:11px 14px;border:2px solid var(--ink);border-radius:12px;background:#fff}
+.modes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mode{border:2px solid var(--ink);background:#fff;border-radius:14px;padding:12px 6px;text-align:center;font-size:14px;color:var(--muted)}
+.mode b{display:block;font-family:"Black Han Sans";font-weight:400;font-size:20px;color:var(--ink);margin-bottom:2px}
+.mode.on{background:var(--ink);color:#dfe5f3}
+.mode.on b{color:#fff}
+.mode[data-m="1"].on{background:var(--l1);border-color:var(--l1)}
+.mode[data-m="2"].on{background:var(--l2);border-color:var(--l2)}
+.mode[data-m="3"].on{background:var(--l3);border-color:var(--l3)}
+.mode[data-m="a"].on{background:var(--gold);border-color:var(--ink);color:var(--ink)}
+.mode[data-m="a"].on b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--ink);background:#fff;border-radius:99px;padding:7px 14px;font-size:15px}
+.chip.on{background:var(--ink);color:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.best{margin-top:16px;text-align:center;color:var(--muted);font-size:14px}
+.start-btn{width:100%;margin-top:8px;font-size:20px;padding:15px;font-family:"Black Han Sans"}
+
+/* game */
+.hud{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.pill{border:2px solid var(--ink);background:#fff;border-radius:99px;padding:5px 13px;font-size:14px;white-space:nowrap}
+.pill.lv{color:#fff;font-family:"Black Han Sans"}
+.pill .k{color:var(--muted)}
+.spacer{flex:1}
+.combo{color:var(--gold);font-family:"Black Han Sans"}
+.progress{height:10px;border:2px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden;margin-bottom:8px}
+.progress>div{height:100%;background:var(--ink);transition:width .3s}
+.timer{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:16px}
+.timer>div{height:100%;background:var(--gold)}
+.qmeta{font-size:14px;color:var(--muted);margin-bottom:8px}
+.qtext{font-size:21px;line-height:1.75;margin-bottom:20px;word-break:keep-all}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{display:flex;align-items:center;gap:12px;text-align:left;border:2px solid var(--ink);background:#fff;border-radius:14px;padding:14px 16px;font-size:20px;color:var(--ink);transition:background .15s, transform .08s}
+.choice:hover:not(:disabled){background:#f2efe6}
+.choice .n{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:14px;font-family:"Black Han Sans"}
+.choice.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.choice.ok .n{border-color:#fff}
+.choice.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.choice.bad .n{border-color:#fff}
+.choice:disabled{cursor:default}
+.fb{margin-top:18px;border-radius:14px;padding:16px 18px;border:2px dashed var(--ink);background:#fffdf6}
+.fb h3{margin:0 0 6px;font-size:22px}
+.fb.good h3{color:var(--ok)}
+.fb.bad h3{color:var(--bad)}
+.fb .exp{line-height:1.8;font-size:16px}
+.fb .lvmsg{margin-top:10px;font-weight:bold;color:var(--ink);background:var(--gold);display:inline-block;padding:3px 12px;border-radius:99px;border:2px solid var(--ink)}
+.fb .next{margin-top:14px;float:right}
+.fb::after{content:"";display:block;clear:both}
+.mat{display:inline-grid;grid-template-columns:repeat(2,auto);gap:0 14px;padding:2px 9px;margin:0 3px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:7px;vertical-align:middle;text-align:center;line-height:1.45;font-size:.92em}
+.keys{font-size:13px;color:var(--muted);text-align:center;margin-top:14px}
+.pop{position:fixed;left:50%;top:22%;transform:translate(-50%,-50%) scale(.6);font-family:"Black Han Sans";font-size:44px;color:var(--gold);-webkit-text-stroke:2px var(--ink);opacity:0;pointer-events:none;transition:all .35s}
+.pop.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* result */
+.score-big{text-align:center;margin:8px 0 18px}
+.score-big .s{font-family:"Black Han Sans";font-size:64px;line-height:1}
+.score-big .sub{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat{border:2px solid var(--ink);border-radius:14px;padding:10px;text-align:center;background:#fff}
+.stat b{display:block;font-family:"Black Han Sans";font-size:26px;font-weight:400}
+.stat span{font-size:13px;color:var(--muted)}
+.rec{border:2px solid var(--ink);border-radius:14px;padding:14px 16px;background:#fff7df;margin-bottom:18px;line-height:1.7}
+.rec b{font-family:"Black Han Sans";font-weight:400;font-size:19px}
+.bars{margin-bottom:18px}
+.bar{display:grid;grid-template-columns:120px 1fr 70px;align-items:center;gap:10px;margin:8px 0;font-size:15px}
+.bar .t{height:14px;border:2px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden}
+.bar .t>div{height:100%}
+.bar .v{text-align:right;color:var(--muted)}
+.wrong{border-top:2px dashed var(--line);padding:14px 0}
+.wrong .wq{font-size:17px;line-height:1.7;margin-bottom:6px}
+.wrong .wa{font-size:15px;margin-bottom:6px}
+.wrong .we{font-size:15px;color:#3d4762;line-height:1.75;background:#faf8f2;border-radius:10px;padding:10px 12px}
+.actions{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+h2.sec{font-size:21px;margin:20px 0 8px}
+@media (max-width:560px){
+  .hero h1{font-size:31px}
+  .modes{grid-template-columns:1fr 1fr}
+  .choices{grid-template-columns:1fr}
+  .qtext{font-size:19px}
+  .row2{grid-template-columns:1fr}
+  .bar{grid-template-columns:90px 1fr 60px}
+  .score-big .s{font-size:52px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- START -->
+<section id="start">
+  <div class="hero">
+    <div class="tag">고1 공통수학1</div>
+    <h1>수준별 <span>맞춤형</span><br>수학 퀴즈</h1>
+    <p>문제는 매번 새로 만들어져요. 같은 문제는 거의 나오지 않아요!</p>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label for="nick">이름(닉네임)</label>
+      <input id="nick" type="text" maxlength="12" placeholder="예) 1학년 3반 김수학">
+    </div>
+    <div class="field">
+      <label>난이도</label>
+      <div class="modes" id="modes">
+        <button class="mode on" data-m="a"><b>맞춤</b>실력 따라 자동 조절</button>
+        <button class="mode" data-m="1"><b>기초</b>개념 확인</button>
+        <button class="mode" data-m="2"><b>중급</b>교과서 수준</button>
+        <button class="mode" data-m="3"><b>심화</b>응용·도전</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>단원 (여러 개 선택 가능)</label>
+      <div class="chips" id="units"></div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>문항 수</label>
+        <div class="chips" id="counts">
+          <button class="chip" data-c="5">5문항</button>
+          <button class="chip on" data-c="10">10문항</button>
+          <button class="chip" data-c="20">20문항</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>제한 시간</label>
+        <div class="chips" id="timers">
+          <button class="chip on" data-t="1">켜기</button>
+          <button class="chip" data-t="0">끄기 (연습)</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn start-btn" id="startBtn">시작하기 ▶</button>
+    <div class="best" id="bestLine"></div>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="hidden">
+  <div class="hud">
+    <span class="pill lv" id="lvPill">중급</span>
+    <span class="pill"><span class="k">문제</span> <b id="qNo">1</b>/<span id="qTot">10</span></span>
+    <span class="pill"><span class="k">점수</span> <b id="scoreV">0</b></span>
+    <span class="spacer"></span>
+    <span class="combo" id="comboV"></span>
+    <button class="pill" id="quitBtn" style="cursor:pointer">그만하기</button>
+  </div>
+  <div class="progress"><div id="progBar" style="width:0%"></div></div>
+  <div class="timer" id="timerWrap"><div id="timerBar" style="width:100%"></div></div>
+  <div class="card">
+    <div class="qmeta" id="qMeta"></div>
+    <div class="qtext" id="qText"></div>
+    <div class="choices" id="choices"></div>
+    <div class="fb hidden" id="fb"></div>
+  </div>
+  <div class="keys">키보드: 1~4로 선택 · Enter로 다음 문제</div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="hidden">
+  <div class="card">
+    <div class="score-big">
+      <div class="sub" id="rName"></div>
+      <div class="s" id="rScore">0</div>
+      <div class="sub" id="rBest"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="rAcc">0%</b><span>정답률</span></div>
+      <div class="stat"><b id="rCombo">0</b><span>최대 연속 정답</span></div>
+      <div class="stat"><b id="rTime">0초</b><span>평균 풀이 시간</span></div>
+    </div>
+    <div class="rec" id="rRec"></div>
+    <h2 class="sec">단원별 정답률</h2>
+    <div class="bars" id="rUnits"></div>
+    <h2 class="sec">난이도별 정답률</h2>
+    <div class="bars" id="rLevels"></div>
+    <h2 class="sec" id="wrongTitle">오답 노트</h2>
+    <div id="rWrong"></div>
+    <div class="actions">
+      <button class="btn" id="againBtn">같은 설정으로 다시</button>
+      <button class="btn ghost" id="homeBtn">처음으로</button>
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="pop" id="pop"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const rnz=(a,b)=>{let v;do{v=ri(a,b)}while(v===0);return v};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const num=n=>n<0?'−'+Math.abs(n):''+n;
+const pm=n=>n<0?'− '+Math.abs(n):'+ '+n;
+const par=n=>n<0?'('+num(n)+')':''+n;
+const fact=n=>n<=1?1:n*fact(n-1);
+const P=(n,r)=>{let v=1;for(let i=0;i<r;i++)v*=n-i;return v};
+const C=(n,r)=>r<0||r>n?0:P(n,r)/fact(r);
+const X='<i>x</i>', I='<i>i</i>';
+function poly(cs){
+  const d=cs.length-1, parts=[];
+  cs.forEach((c,idx)=>{
+    if(c===0)return;
+    const p=d-idx, a=Math.abs(c);
+    const co=(a===1&&p>0)?'':a;
+    const v=p===0?'':(p===1?X:X+'<sup>'+p+'</sup>');
+    if(!parts.length)parts.push((c<0?'−':'')+co+v);
+    else parts.push(' '+(c<0?'−':'+')+' '+co+v);
+  });
+  return parts.join('')||'0';
+}
+function cplx(a,b){
+  if(b===0)return num(a);
+  const bi=(Math.abs(b)===1?'':Math.abs(b))+I;
+  if(a===0)return (b<0?'−':'')+bi;
+  return num(a)+' '+(b<0?'−':'+')+' '+bi;
+}
+const mat=M=>`<span class="mat"><span>${num(M[0][0])}</span><span>${num(M[0][1])}</span><span>${num(M[1][0])}</span><span>${num(M[1][1])}</span></span>`;
+const rmat=(a,b)=>[[ri(a,b),ri(a,b)],[ri(a,b),ri(a,b)]];
+function makeChoices(ans,cands){
+  const s=[ans];
+  for(const c of cands){if(Number.isFinite(c)&&!s.includes(c)&&s.length<4)s.push(c)}
+  let d=1;
+  while(s.length<4){for(const c of [ans+d,ans-d]){if(!s.includes(c)&&s.length<4)s.push(c)}d++}
+  return shuffle(s).map(num);
+}
+
+/* ---------- question bank (generators) ---------- */
+const UNITS=['다항식','방정식과 부등식','경우의 수','행렬'];
+const LV={1:{name:'기초',color:'var(--l1)',time:40,base:100},2:{name:'중급',color:'var(--l2)',time:60,base:200},3:{name:'심화',color:'var(--l3)',time:90,base:300}};
+const G={1:[],2:[],3:[]};
+const add=(lv,unit,topic,fn)=>G[lv].push({unit,topic,fn});
+
+/* ===== 기초 ===== */
+add(1,'다항식','다항식의 곱셈',()=>{
+  const a=rnz(-6,6),b=rnz(-6,6);
+  return {q:`(${X} ${pm(a)})(${X} ${pm(b)}) 를 전개했을 때, ${X}의 계수는?`,
+    ans:a+b,cands:[a*b,a-b,-(a+b)],
+    exp:`(${X} + <i>a</i>)(${X} + <i>b</i>) = ${X}<sup>2</sup> + (<i>a</i> + <i>b</i>)${X} + <i>ab</i> 이므로<br>${X}의 계수는 ${num(a)} + ${par(b)} = <b>${num(a+b)}</b>`};
+});
+add(1,'다항식','나머지정리',()=>{
+  const a=ri(-5,5),b=ri(-6,6),k=rnz(-3,3);const f=t=>t*t+a*t+b;
+  return {q:`다항식 ${poly([1,a,b])} 를 ${X} ${pm(-k)} 로 나누었을 때의 나머지는?`,
+    ans:f(k),cands:[f(-k),b,f(k)+k],
+    exp:`나머지정리에 의해 나머지는 <i>f</i>(${num(k)})<br>= ${par(k)}<sup>2</sup> ${a?(a<0?'− ':'+ ')+Math.abs(a)+'×'+par(k):''} ${b?pm(b):''} = <b>${num(f(k))}</b>`};
+});
+add(1,'방정식과 부등식','복소수 (i의 거듭제곱)',()=>{
+  const n=ri(5,60),r=n%4,vals=['1',I,'−1','−'+I];
+  return {q:`${I}<sup>${n}</sup> 의 값은? (단, ${I} = √−1)`,
+    ans:vals[r],choices:shuffle(vals),
+    exp:`${I}의 거듭제곱은 ${I}, −1, −${I}, 1 이 4개씩 반복돼요.<br>${n} = 4 × ${Math.floor(n/4)} + ${r} 이므로 ${I}<sup>${n}</sup> = ${r===0?'1':I+'<sup>'+r+'</sup>'} = <b>${vals[r]}</b>`};
+});
+add(1,'방정식과 부등식','근과 계수의 관계',()=>{
+  const r1=ri(-6,6),r2=ri(-6,6),p=-(r1+r2),q=r1*r2,sum=Math.random()<.5;
+  return {q:`이차방정식 ${poly([1,p,q])} = 0 의 두 근의 ${sum?'합':'곱'}은?`,
+    ans:sum?-p:q,cands:sum?[p,q,-q]:[-q,p,-p],
+    exp:`<i>ax</i><sup>2</sup> + <i>bx</i> + <i>c</i> = 0 에서 두 근의 합은 −<i>b</i>/<i>a</i>, 곱은 <i>c</i>/<i>a</i>.<br>따라서 두 근의 ${sum?'합':'곱'} = <b>${num(sum?-p:q)}</b>`};
+});
+add(1,'방정식과 부등식','일차부등식',()=>{
+  const a=ri(2,5),k=ri(-5,5),b=ri(-9,9);
+  if(Math.random()<.5){
+    const c=a*k+b;
+    return {q:`일차부등식 ${poly([a,b])} > ${num(c)} 를 만족시키는 가장 작은 정수 ${X}는?`,
+      ans:k+1,cands:[k,k-1,k+2],
+      exp:`${a}${X} > ${num(c)} ${pm(-b)} = ${num(a*k)} 이므로 ${X} > ${num(k)}.<br>${num(k)}보다 큰 가장 작은 정수는 <b>${num(k+1)}</b>`};
+  }else{
+    const c=-a*k+b;
+    return {q:`일차부등식 ${poly([-a,b])} > ${num(c)} 를 만족시키는 가장 큰 정수 ${X}는?`,
+      ans:k-1,cands:[k,k+1,-k],
+      exp:`−${a}${X} > ${num(-a*k)} 에서 양변을 음수 −${a}로 나누면 부등호 방향이 바뀌어 ${X} < ${num(k)}.<br>${num(k)}보다 작은 가장 큰 정수는 <b>${num(k-1)}</b>`};
+  }
+});
+add(1,'경우의 수','순열과 조합',()=>{
+  const n=ri(4,7),t=ri(0,2);
+  if(t===0)return {q:`학생 ${n}명 중에서 회장 1명, 부회장 1명을 뽑는 경우의 수는?`,ans:P(n,2),cands:[C(n,2),2*n,n*n],
+    exp:`순서(역할)가 있으므로 순열: <sub>${n}</sub>P<sub>2</sub> = ${n} × ${n-1} = <b>${P(n,2)}</b>`};
+  if(t===1)return {q:`학생 ${n}명 중에서 청소 당번 2명을 뽑는 경우의 수는?`,ans:C(n,2),cands:[P(n,2),2*n,C(n,3)],
+    exp:`순서가 없으므로 조합: <sub>${n}</sub>C<sub>2</sub> = (${n} × ${n-1}) ÷ 2 = <b>${C(n,2)}</b>`};
+  return {q:`서로 다른 책 ${n}권 중 3권을 골라 책꽂이에 한 줄로 꽂는 경우의 수는?`,ans:P(n,3),cands:[C(n,3),3*n,P(n,2)],
+    exp:`골라서 일렬로 나열하므로 순열: <sub>${n}</sub>P<sub>3</sub> = ${n} × ${n-1} × ${n-2} = <b>${P(n,3)}</b>`};
+});
+add(1,'행렬','행렬의 덧셈과 실수배',()=>{
+  const A=rmat(-4,4),B=rmat(-4,4),i=ri(0,1),j=ri(0,1),a=A[i][j],b=B[i][j];
+  return {q:`<i>A</i> = ${mat(A)}, <i>B</i> = ${mat(B)} 일 때,<br>행렬 2<i>A</i> − <i>B</i> 의 (${i+1}, ${j+1}) 성분은?`,
+    ans:2*a-b,cands:[2*a+b,a-b,2*a-2*b],
+    exp:`같은 위치의 성분끼리 계산해요. (${i+1}, ${j+1}) 성분: 2 × ${par(a)} − ${par(b)} = <b>${num(2*a-b)}</b>`};
+});
+
+/* ===== 중급 ===== */
+add(2,'다항식','나머지정리',()=>{
+  const a=ri(-5,5),b=ri(-5,5),c=ri(-5,5),k=rnz(-2,2);const f=t=>t**3+a*t*t+b*t+c;
+  return {q:`다항식 <i>f</i>(${X}) = ${poly([1,a,b,c])} 를 ${X} ${pm(-k)} 로 나누었을 때의 나머지는?`,
+    ans:f(k),cands:[f(-k),c,f(k)+2*k],
+    exp:`나머지정리에 의해 나머지는 <i>f</i>(${num(k)}) = ${par(k)}<sup>3</sup> + ${par(a)}·${par(k)}<sup>2</sup> + ${par(b)}·${par(k)} + ${par(c)} = <b>${num(f(k))}</b>`};
+});
+add(2,'방정식과 부등식','복소수의 곱셈',()=>{
+  const a=rnz(-4,4),b=rnz(-4,4),c=rnz(-4,4),d=rnz(-4,4);
+  const x=a*c-b*d,y=a*d+b*c;
+  return {q:`(${cplx(a,b)})(${cplx(c,d)}) = <i>p</i> + <i>q</i>${I} 일 때, <i>p</i> + <i>q</i> 의 값은? (단, <i>p</i>, <i>q</i>는 실수)`,
+    ans:x+y,cands:[a*c+b*d+y,x,y],
+    exp:`전개하면 ${a*c} ${pm(a*d+b*c)}${I} + ${par(b*d)}${I}<sup>2</sup>, ${I}<sup>2</sup> = −1 이므로<br><i>p</i> = ${num(a*c)} − ${par(b*d)} = ${num(x)}, <i>q</i> = ${num(y)} → <i>p</i> + <i>q</i> = <b>${num(x+y)}</b>`};
+});
+add(2,'방정식과 부등식','판별식',()=>{
+  const a=rnz(-6,6);
+  return {q:`이차방정식 ${poly([1,2*a])} + <i>k</i> = 0 이 중근을 가질 때, 실수 <i>k</i>의 값은?`,
+    ans:a*a,cands:[2*a,-a*a,4*a*a],
+    exp:`중근 ⇔ 판별식 <i>D</i> = 0. <i>D</i>/4 = ${par(a)}<sup>2</sup> − <i>k</i> = 0 이므로 <i>k</i> = <b>${a*a}</b>`};
+});
+add(2,'방정식과 부등식','근과 계수의 관계',()=>{
+  const r1=ri(-5,5),r2=ri(-5,5),s=r1+r2,q=r1*r2;
+  return {q:`이차방정식 ${poly([1,-s,q])} = 0 의 두 근을 α, β라 할 때, α<sup>2</sup> + β<sup>2</sup> 의 값은?`,
+    ans:s*s-2*q,cands:[s*s+2*q,s*s,s*s-q],
+    exp:`α + β = ${num(s)}, αβ = ${num(q)}<br>α<sup>2</sup> + β<sup>2</sup> = (α + β)<sup>2</sup> − 2αβ = ${s*s} − ${par(2*q)} = <b>${num(s*s-2*q)}</b>`};
+});
+add(2,'방정식과 부등식','이차함수의 최대·최소',()=>{
+  const a=rnz(-5,5),b=ri(-8,8);
+  return {q:`이차함수 <i>y</i> = ${poly([1,-2*a,b])} 의 최솟값은?`,
+    ans:b-a*a,cands:[b,b+a*a,b-2*a],
+    exp:`완전제곱식으로 바꾸면 <i>y</i> = (${X} ${pm(-a)})<sup>2</sup> ${pm(b-a*a)}<br>${X} = ${num(a)} 일 때 최솟값 <b>${num(b-a*a)}</b>`};
+});
+add(2,'방정식과 부등식','이차부등식',()=>{
+  const p=ri(-5,3),q=p+ri(2,7),strict=Math.random()<.5;
+  const ans=strict?q-p-1:q-p+1;
+  return {q:`이차부등식 ${poly([1,-(p+q),p*q])} ${strict?'<':'≤'} 0 을 만족시키는 정수 ${X}의 개수는?`,
+    ans,cands:[strict?q-p+1:q-p-1,q-p,q+p],
+    exp:`인수분해하면 (${X} ${pm(-p)})(${X} ${pm(-q)}) ${strict?'<':'≤'} 0 → ${num(p)} ${strict?'<':'≤'} ${X} ${strict?'<':'≤'} ${num(q)}<br>정수 ${X}는 <b>${ans}개</b> ${strict?'(양 끝 제외)':'(양 끝 포함)'}`};
+});
+add(2,'경우의 수','조합의 활용',()=>{
+  const m=ri(3,6),f=ri(2,5);
+  return {q:`남학생 ${m}명, 여학생 ${f}명 중에서 남학생 2명, 여학생 1명을 뽑는 경우의 수는?`,
+    ans:C(m,2)*f,cands:[C(m+f,3),C(m,2)+f,P(m,2)*f],
+    exp:`남학생 2명: <sub>${m}</sub>C<sub>2</sub> = ${C(m,2)}, 여학생 1명: <sub>${f}</sub>C<sub>1</sub> = ${f}<br>동시에 일어나므로 곱의 법칙: ${C(m,2)} × ${f} = <b>${C(m,2)*f}</b>`};
+});
+add(2,'행렬','행렬의 곱셈',()=>{
+  const A=rmat(-3,3),B=rmat(-3,3),i=ri(0,1),j=ri(0,1);
+  const ab=A[i][0]*B[0][j]+A[i][1]*B[1][j];
+  const ba=B[i][0]*A[0][j]+B[i][1]*A[1][j];
+  return {q:`<i>A</i> = ${mat(A)}, <i>B</i> = ${mat(B)} 일 때,<br>행렬 <i>AB</i> 의 (${i+1}, ${j+1}) 성분은?`,
+    ans:ab,cands:[ba,A[i][j]*B[i][j],A[i][0]*B[j][0]+A[i][1]*B[j][1]],
+    exp:`<i>A</i>의 ${i+1}행과 <i>B</i>의 ${j+1}열을 곱해 더해요.<br>${par(A[i][0])}×${par(B[0][j])} + ${par(A[i][1])}×${par(B[1][j])} = <b>${num(ab)}</b>`};
+});
+
+/* ===== 심화 ===== */
+add(3,'다항식','인수정리',()=>{
+  let r1,r2;do{r1=ri(-3,3);r2=ri(-3,3)}while(r1===r2);
+  const s=r1+r2,pr=r1*r2,r3=-s,a=pr-s*s,b=pr*s;
+  return {q:`다항식 ${X}<sup>3</sup> + <i>a</i>${X} + <i>b</i> 가 ${poly([1,-s,pr])} 로 나누어떨어질 때, <i>a</i> + <i>b</i> 의 값은?`,
+    ans:a+b,cands:[a-b,b-a,-(a+b)],
+    exp:`${poly([1,-s,pr])} = (${X} ${pm(-r1)})(${X} ${pm(-r2)}) 이므로 세 근 중 둘이 ${num(r1)}, ${num(r2)}.<br>${X}<sup>2</sup>의 계수가 0이므로 세 근의 합 = 0 → 나머지 근은 ${num(r3)}.<br><i>a</i> = (두 근끼리 곱의 합) = ${num(a)}, <i>b</i> = −(세 근의 곱) = ${num(b)} → <i>a</i> + <i>b</i> = <b>${num(a+b)}</b>`};
+});
+add(3,'방정식과 부등식','근과 계수의 관계',()=>{
+  const r1=ri(-4,4),r2=ri(-4,4),s=r1+r2,q=r1*r2,ans=s**3-3*q*s;
+  return {q:`이차방정식 ${poly([1,-s,q])} = 0 의 두 근을 α, β라 할 때, α<sup>3</sup> + β<sup>3</sup> 의 값은?`,
+    ans,cands:[s**3+3*q*s,s**3,s**3-q*s],
+    exp:`α + β = ${num(s)}, αβ = ${num(q)}<br>α<sup>3</sup> + β<sup>3</sup> = (α + β)<sup>3</sup> − 3αβ(α + β) = ${num(s**3)} − ${par(3*q*s)} = <b>${num(ans)}</b>`};
+});
+add(3,'방정식과 부등식','제한된 범위의 최대·최소',()=>{
+  const p=ri(-3,4),c=ri(-5,5),m=ri(-3,2),n=m+ri(2,4);
+  const f=t=>-(t-p)*(t-p)+p*p+c;
+  const inside=p>=m&&p<=n,ans=inside?f(p):Math.max(f(m),f(n));
+  return {q:`${num(m)} ≤ ${X} ≤ ${num(n)} 에서 이차함수 <i>y</i> = ${poly([-1,2*p,c])} 의 최댓값은?`,
+    ans,cands:[f(p),f(m),f(n),Math.min(f(m),f(n))],
+    exp:`<i>y</i> = −(${X} ${pm(-p)})<sup>2</sup> ${pm(p*p+c)} → 꼭짓점의 ${X}좌표 ${num(p)}${inside?'가 범위 안에 있어요.':'는 범위 밖이에요.'}<br>`+
+      (inside?`따라서 꼭짓점에서 최댓값 <b>${num(ans)}</b>`:`양 끝값 <i>f</i>(${num(m)}) = ${num(f(m))}, <i>f</i>(${num(n)}) = ${num(f(n))} 중 큰 값 <b>${num(ans)}</b>`)};
+});
+add(3,'방정식과 부등식','복소수의 거듭제곱',()=>{
+  const n=pick([4,6,8,10,12]),k=n/2,big=2**(k+1);
+  const ans=k%2?0:(k%4===0?big:-big);
+  return {q:`(1 + ${I})<sup>${n}</sup> + (1 − ${I})<sup>${n}</sup> 의 값은?`,
+    ans,cands:[big,-big,2**k,0],
+    exp:`(1 + ${I})<sup>2</sup> = 2${I}, (1 − ${I})<sup>2</sup> = −2${I}<br>(2${I})<sup>${k}</sup> + (−2${I})<sup>${k}</sup> = ${2**k}(${I}<sup>${k}</sup> + (−${I})<sup>${k}</sup>) = <b>${num(ans)}</b>`};
+});
+add(3,'경우의 수','이웃하는 순열',()=>{
+  const n=ri(4,6),ans=fact(n-1)*2;
+  return {q:`${n}명이 한 줄로 설 때, 특정한 두 사람 A, B가 이웃하여 서는 경우의 수는?`,
+    ans,cands:[fact(n-1),fact(n),fact(n)-ans],
+    exp:`A, B를 한 묶음으로 보면 ${n-1}개를 나열: ${n-1}! = ${fact(n-1)}<br>묶음 안에서 A, B 자리 바꾸기 2가지 → ${fact(n-1)} × 2 = <b>${ans}</b>`};
+});
+add(3,'경우의 수','"적어도"의 경우의 수',()=>{
+  const m=ri(3,6),f=ri(2,4),t=m+f,ans=C(t,3)-C(m,3);
+  return {q:`남학생 ${m}명, 여학생 ${f}명 중에서 3명을 뽑을 때, 여학생이 적어도 1명 포함되는 경우의 수는?`,
+    ans,cands:[C(t,3),f*C(t-1,2),C(m,3)],
+    exp:`(전체) − (남학생만 3명) = <sub>${t}</sub>C<sub>3</sub> − <sub>${m}</sub>C<sub>3</sub> = ${C(t,3)} − ${C(m,3)} = <b>${ans}</b><br>※ 여학생 1명을 먼저 뽑고 나머지 2명을 뽑으면 중복이 생겨 틀려요.`};
+});
+add(3,'행렬','행렬의 거듭제곱',()=>{
+  const A=rmat(-3,3),[[a,b],[c,d]]=A;
+  const S=[[a*a+b*c,a*b+b*d],[c*a+d*c,c*b+d*d]],ans=S[0][0]+S[0][1]+S[1][0]+S[1][1];
+  return {q:`<i>A</i> = ${mat(A)} 일 때, 행렬 <i>A</i><sup>2</sup> 의 모든 성분의 합은?`,
+    ans,cands:[a*a+b*b+c*c+d*d,(a+b+c+d)**2,ans+2*b*c],
+    exp:`<i>A</i><sup>2</sup> = <i>A</i> × <i>A</i> = ${mat(S)}<br>모든 성분의 합 = <b>${num(ans)}</b><br>※ 각 성분을 제곱하는 것이 아니에요!`};
+});
+
+/* ---------- state ---------- */
+const $=id=>document.getElementById(id);
+const S={mode:'a',count:10,timer:true,units:new Set(UNITS)};
+let st=null,tick=null;
+
+/* setup UI */
+$('units').innerHTML=UNITS.map(u=>`<button class="chip on" data-u="${u}">${u}</button>`).join('');
+$('units').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;const u=b.dataset.u;
+  if(S.units.has(u)){if(S.units.size===1)return;S.units.delete(u);b.classList.remove('on')}else{S.units.add(u);b.classList.add('on')}};
+$('modes').onclick=e=>{const b=e.target.closest('.mode');if(!b)return;document.querySelectorAll('.mode').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.mode=b.dataset.m;showBest()};
+$('counts').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;document.querySelectorAll('#counts .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.count=+b.dataset.c};
+$('timers').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;document.querySelectorAll('#timers .chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');S.timer=b.dataset.t==='1'};
+const modeName=m=>m==='a'?'맞춤':LV[m].name;
+function getBest(m){try{return +(localStorage.getItem('mq_best_'+m)||0)}catch(e){return 0}}
+function setBest(m,v){try{localStorage.setItem('mq_best_'+m,v)}catch(e){}}
+function showBest(){const b=getBest(S.mode);$('bestLine').textContent=b?`이 기기에서 [${modeName(S.mode)}] 최고 점수: ${b}점`:''}
+showBest();
+
+function show(id){['start','game','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0)}
+
+function startGame(){
+  st={name:$('nick').value.trim(),mode:S.mode,total:S.count,timer:S.timer,units:new Set(S.units),
+    idx:0,level:S.mode==='a'?2:+S.mode,score:0,combo:0,maxCombo:0,upStreak:0,downStreak:0,
+    hist:[],lastTopic:null,cur:null,answered:false,tStart:0};
+  $('qTot').textContent=st.total;
+  $('timerWrap').classList.toggle('hidden',!st.timer);
+  show('game');nextQ();
+}
+function genQ(){
+  const pool=G[st.level].filter(g=>st.units.has(g.unit));
+  let g,tries=0;
+  do{g=pick(pool);tries++}while(pool.length>1&&g.topic+g.unit===st.lastTopic&&tries<10);
+  st.lastTopic=g.topic+g.unit;
+  const o=g.fn();
+  const ans=typeof o.ans==='number'?num(o.ans):o.ans;
+  const choices=o.choices||makeChoices(o.ans,o.cands);
+  return {...o,ans,choices,unit:g.unit,topic:g.topic,level:st.level};
+}
+function nextQ(){
+  if(st.idx>=st.total)return finish();
+  st.cur=genQ();st.answered=false;
+  const q=st.cur,L=LV[q.level];
+  $('lvPill').textContent=L.name;$('lvPill').style.background=L.color;$('lvPill').style.borderColor=L.color;
+  $('qNo').textContent=st.idx+1;$('scoreV').textContent=st.score;
+  $('progBar').style.width=(st.idx/st.total*100)+'%';
+  $('comboV').textContent=st.combo>=2?`🔥 ${st.combo}연속!`:'';
+  $('qMeta').textContent=`${q.unit} · ${q.topic}`;
+  $('qText').innerHTML=q.q;
+  $('choices').innerHTML=q.choices.map((c,i)=>`<button class="choice" data-i="${i}"><span class="n">${i+1}</span><span>${c}</span></button>`).join('');
+  $('fb').classList.add('hidden');
+  st.tStart=performance.now();
+  clearInterval(tick);
+  if(st.timer){
+    const lim=L.time*1000;$('timerBar').style.width='100%';
+    tick=setInterval(()=>{const left=Math.max(0,lim-(performance.now()-st.tStart));
+      $('timerBar').style.width=(left/lim*100)+'%';
+      $('timerBar').style.background=left<lim*.25?'var(--bad)':'var(--gold)';
+      if(left<=0)answer(-1)},100);
+  }
+}
+$('choices').onclick=e=>{const b=e.target.closest('.choice');if(b)answer(+b.dataset.i)};
+function popMsg(t){const p=$('pop');p.textContent=t;p.classList.add('show');setTimeout(()=>p.classList.remove('show'),900)}
+
+function answer(i){
+  if(st.answered)return;st.answered=true;clearInterval(tick);
+  const q=st.cur,secs=(performance.now()-st.tStart)/1000,L=LV[q.level];
+  const chosen=i>=0?q.choices[i]:null,ok=chosen===q.ans;
+  document.querySelectorAll('.choice').forEach((b,k)=>{b.disabled=true;
+    if(q.choices[k]===q.ans)b.classList.add('ok');else if(k===i)b.classList.add('bad')});
+  let gained=0;
+  if(ok){
+    st.combo++;st.maxCombo=Math.max(st.maxCombo,st.combo);
+    const tb=st.timer?Math.round(50*Math.max(0,1-secs/L.time)):0;
+    const cb=Math.min(100,(st.combo-1)*20);
+    gained=L.base+tb+cb;st.score+=gained;
+    if(st.combo>=3)popMsg(`${st.combo} COMBO!`);
+  }else st.combo=0;
+  st.hist.push({...q,ok,chosen,secs,timeout:i<0});
+  // adaptive
+  let lvmsg='';
+  if(st.mode==='a'){
+    if(ok){st.upStreak++;st.downStreak=0;
+      if(st.upStreak>=2&&st.level<3){st.level++;st.upStreak=0;lvmsg=`⬆ 레벨 업! 다음부터 ${LV[st.level].name} 문제`;popMsg('LEVEL UP!')}}
+    else{st.downStreak++;st.upStreak=0;
+      if(st.downStreak>=2&&st.level>1){st.level--;st.downStreak=0;lvmsg=`⬇ 다음부터 ${LV[st.level].name} 문제로 다지기`}}
+  }
+  $('scoreV').textContent=st.score;
+  $('comboV').textContent=st.combo>=2?`🔥 ${st.combo}연속!`:'';
+  const fb=$('fb');fb.className='fb '+(ok?'good':'bad');
+  fb.innerHTML=`<h3>${ok?'정답! +'+gained+'점':(i<0?'시간 초과!':'아쉬워요!')+' 정답은 '+q.ans}</h3>
+    <div class="exp">${q.exp}</div>${lvmsg?`<div class="lvmsg">${lvmsg}</div>`:''}
+    <button class="btn next" id="nextBtn">${st.idx+1>=st.total?'결과 보기':'다음 문제'} →</button>`;
+  $('nextBtn').onclick=()=>{st.idx++;nextQ()};
+  $('nextBtn').focus({preventScroll:true});
+}
+document.addEventListener('keydown',e=>{
+  if($('game').classList.contains('hidden'))return;
+  if(!st.answered&&/^[1-4]$/.test(e.key))answer(+e.key-1);
+  else if(st.answered&&e.key==='Enter'){e.preventDefault();st.idx++;nextQ()}
+});
+$('quitBtn').onclick=()=>{clearInterval(tick);if(st.hist.length)finish();else show('start')};
+
+function bar(label,c,t,color){const r=t?c/t:0;
+  return `<div class="bar"><span>${label}</span><div class="t"><div style="width:${r*100}%;background:${color}"></div></div><span class="v">${t?c+'/'+t:'—'}</span></div>`}
+
+function finish(){
+  clearInterval(tick);
+  const h=st.hist,n=h.length,c=h.filter(x=>x.ok).length,acc=n?Math.round(c/n*100):0;
+  $('rName').textContent=(st.name?st.name+' · ':'')+`[${modeName(st.mode)}] 모드 결과`;
+  $('rScore').textContent=st.score+'점';
+  const prev=getBest(st.mode);
+  if(st.score>prev){setBest(st.mode,st.score);$('rBest').textContent=prev?`🎉 최고 기록 경신! (이전 ${prev}점)`:'🎉 첫 기록!'}
+  else $('rBest').textContent=`최고 기록 ${prev}점`;
+  $('rAcc').textContent=acc+'%';$('rCombo').textContent=st.maxCombo;
+  $('rTime').textContent=n?(h.reduce((s,x)=>s+x.secs,0)/n).toFixed(1)+'초':'—';
+  $('rUnits').innerHTML=UNITS.filter(u=>st.units.has(u)).map(u=>{const a=h.filter(x=>x.unit===u);return bar(u,a.filter(x=>x.ok).length,a.length,'var(--ink)')}).join('');
+  $('rLevels').innerHTML=[1,2,3].map(l=>{const a=h.filter(x=>x.level===l);return bar(LV[l].name,a.filter(x=>x.ok).length,a.length,LV[l].color)}).join('');
+  // recommendation
+  let rec=1;
+  for(const l of [1,2,3]){const a=h.filter(x=>x.level===l);if(a.length>=2&&a.filter(x=>x.ok).length/a.length>=.7)rec=l}
+  if(st.mode==='a')rec=Math.max(rec,st.level);
+  const weak=UNITS.filter(u=>st.units.has(u)).map(u=>{const a=h.filter(x=>x.unit===u);return {u,t:a.length,r:a.length?a.filter(x=>x.ok).length/a.length:1}}).filter(x=>x.t&&x.r<.6).map(x=>x.u);
+  let msg=`추천 난이도: <b>${LV[rec].name}</b><br>`;
+  if(acc>=90)msg+='거의 완벽해요! '+(rec<3?'한 단계 위 난이도에 도전해 보세요.':'심화 문제도 거뜬하네요. 👏');
+  else if(acc>=70)msg+='잘했어요! 틀린 문제의 해설을 확인하면 실력이 더 단단해져요.';
+  else if(acc>=40)msg+='기본기는 갖췄어요. 오답 노트로 개념을 다시 정리해 봐요.';
+  else msg+='조금 낮은 난이도부터 차근차근 다시 해 봐요. 해설을 꼭 읽어 보세요!';
+  if(weak.length)msg+=`<br>보충이 필요한 단원: <b style="font-size:16px">${weak.join(', ')}</b>`;
+  $('rRec').innerHTML=msg;
+  const w=h.filter(x=>!x.ok);
+  $('wrongTitle').textContent=w.length?`오답 노트 (${w.length}문항)`:'오답 노트';
+  $('rWrong').innerHTML=w.length?w.map(x=>`<div class="wrong"><div class="qmeta">${LV[x.level].name} · ${x.unit} · ${x.topic}</div>
+    <div class="wq">${x.q}</div><div class="wa">내 답: <b style="color:var(--bad)">${x.timeout?'시간 초과':x.chosen}</b> · 정답: <b style="color:var(--ok)">${x.ans}</b></div>
+    <div class="we">${x.exp}</div></div>`).join(''):'<p style="color:var(--muted)">틀린 문제가 없어요! 💯</p>';
+  show('result');
+}
+$('startBtn').onclick=startGame;
+$('againBtn').onclick=startGame;
+$('homeBtn').onclick=()=>{showBest();show('start')};
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수학 게임 모음 · 경안고 1학년</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1026; --panel:#141b3a; --panel2:#1b2550; --line:#2c3a73; --text:#eef1ff; --muted:#9aa5d1; --en:#ffd23f;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Gowun Dodum",system-ui,sans-serif; color:var(--text); min-height:100vh;
+  background:radial-gradient(1200px 600px at 80% -10%,#24306b 0,transparent 60%),
+             radial-gradient(900px 500px at -10% 110%,#3a1d5c 0,transparent 60%), var(--bg);
+}
+.disp,h1,h2{font-family:"Black Han Sans",sans-serif;font-weight:400;letter-spacing:.4px}
+.wrap{max-width:900px;margin:0 auto;padding:40px 18px 60px}
+.hero{text-align:center;margin-bottom:34px}
+.hero .tag{display:inline-block;border:1px solid var(--en);color:var(--en);border-radius:99px;padding:4px 14px;font-size:13px;margin-bottom:14px}
+.hero h1{font-size:40px;line-height:1.2;margin:0 0 10px}
+.hero h1 span{color:var(--en)}
+.hero p{color:var(--muted);margin:0;font-size:16px;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+a.card{
+  display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--text);
+  background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px;
+  transition:transform .15s,border-color .15s,box-shadow .15s;
+}
+a.card:hover{transform:translateY(-4px);border-color:var(--en);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.emoji{font-size:48px;line-height:1}
+a.card h2{margin:0;font-size:24px}
+a.card p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.65;flex:1}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.pill{background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-size:12.5px;color:var(--muted)}
+.go{margin-top:6px;font-weight:bold;color:var(--en);font-size:14.5px}
+.go::after{content:" →"}
+footer{text-align:center;margin-top:40px;color:var(--muted);font-size:13px}
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .hero h1{font-size:30px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <span class="tag">경안고등학교 1학년</span>
+    <h1>수학을 <span>게임</span>으로</h1>
+    <p>풀고 싶은 게임을 골라 시작하세요. 문제는 매번 새로 만들어져서 몇 번을 해도 질리지 않아요.</p>
+  </div>
+  <div class="grid">
+    <a class="card" href="quiz.html">
+      <div class="emoji">📝</div>
+      <h2>수준별 맞춤형 수학 퀴즈</h2>
+      <p>고1 공통수학1 범위. 기초·중급·심화 난이도를 고르거나, 실력에 맞춰 자동으로 조절되는 맞춤 모드로 풀어요. 제한 시간과 콤보 점수, 오답 노트까지 들어 있어요.</p>
+      <div class="pills"><span class="pill">다항식</span><span class="pill">방정식·부등식</span><span class="pill">경우의 수</span><span class="pill">행렬</span></div>
+      <div class="go">게임 시작하기</div>
+    </a>
+    <a class="card" href="rocket.html">
+      <div class="emoji">🚀</div>
+      <h2>수학 에너지 로켓</h2>
+      <p>고1 공통수학2 교과서 단원으로 출제. 문제를 풀어 ⚡에너지를 모으고, 그 에너지로 로켓을 우주 끝까지 날려 보세요. 빠르게 잘 풀수록 더 어려운 문제와 더 큰 보상이 열려요.</p>
+      <div class="pills"><span class="pill">평면좌표·직선</span><span class="pill">원·도형의 이동</span><span class="pill">집합·명제</span><span class="pill">함수</span></div>
+      <div class="go">게임 시작하기</div>
+    </a>
+  </div>
+  <footer>문제를 풀 때마다 새로운 숫자로 다시 출제돼요 · 기기별로 기록이 저장돼요</footer>
+</div>
+</body>
+</html>
